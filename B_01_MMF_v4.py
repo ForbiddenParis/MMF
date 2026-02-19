@@ -7,7 +7,7 @@ def make_statement(statement, decoration):
     """Emphasizes headings by adding decoration
     at the start and end"""
 
-    print(f"{decoration * 3} {statement} {decoration * 3}")
+    return f"{decoration * 3} {statement} {decoration * 3}"
 
 
 def string_check(question, valid_answers=('yes', 'no'),
@@ -33,7 +33,7 @@ def string_check(question, valid_answers=('yes', 'no'),
 
 
 def instructions():
-    make_statement("Instructions", "ℹ️")
+    print(make_statement("Instructions", "ℹ️"))
 
     print('''
 
@@ -117,7 +117,7 @@ mini_movie_dict = {
 }
 
 # program main heading
-make_statement("Mini-Movie Fundraiser Program", "📽️")
+print(make_statement("Mini-Movie Fundraiser Program", "📽️"))
 
 # ask user if they want to see the instructions
 # display them if necessary
@@ -194,33 +194,80 @@ mini_movie_frame['Profit'] = mini_movie_frame['Ticket Price'] - 5
 total_paid = mini_movie_frame['Total'].sum()
 total_profit = mini_movie_frame['Profit'].sum()
 
+# choose random winner...
+winner = random.choice(all_names)
+
+# find index of winner (ie: position in list)
+winner_index = all_names.index(winner)
+
+# retrieve winner ticket price and profit (so we can adjust
+# profit numbers so that the winning ticket is excluded)
+ticket_won = mini_movie_frame.at[winner_index, 'Total']
+profit_won = mini_movie_frame.at[winner_index, 'Profit']
+
 # currency formatting (uses currency function)
 add_dollars = ['Ticket Price', 'Surcharge', 'Total', 'Profit']
 for var_item in add_dollars:
     mini_movie_frame[var_item] = mini_movie_frame[var_item].apply(currency)
 
 # output movie fram without index
-print(mini_movie_frame.to_string(index=False))
+mini_movie_string = mini_movie_frame.to_string(index=False)
 
-print()
-print(f"Total paid: ${total_paid:.2f}")
-print(f"Total profit: ${total_profit:.2f}")
-
-# choose random winner...
-winner = random.choice(all_names)
-
-# find index of winner (ie: position in list)
-winner_index = all_names.index(winner)
-print("winner", winner, "list position", winner_index)
-
-# find total won
-total_won = mini_movie_frame.at[winner_index, 'Total']
+total_paid_string = f"Total paid: ${total_paid:.2f}"
+total_profit_string = f"Total profit: ${total_profit:.2f}"
 
 # winner announcement
-print(f"The lucky winner is {winner}. Their worth {total_won} is free!")
+lucky_winner_string = (f"The lucky winner is {winner}. "
+                       f"Their ticket worth ${ticket_won:.2f} is free!")
+final_total_paid_string = f"Total Paid is now ${total_paid - ticket_won:.2f}"
+final_profit_string = f"Total Profit is now ${total_profit - profit_won:.2f}"
 
 
 if tickets_sold == MAX_TICKETS:
-    print(f"You have sold all the tickers (ie: {MAX_TICKETS} tickets)")
+    num_sold_string = make_statement(f"You have sold all the tickers "
+                                     f"(ie: {MAX_TICKETS} tickets)", "-")
 else:
-    print(f"You have sold {tickets_sold} / {MAX_TICKETS} tickets.")
+    num_sold_string = make_statement(f"You have sold {tickets_sold} / "
+                                     f"{MAX_TICKETS} tickets.", "-")
+
+# additional strings / headings
+heading_string = make_statement("Mini Movie Fundraiser", "=")
+ticket_details_heading = make_statement("Ticket Details", "-")
+raffle_heading = make_statement("--- Raffle Winner ---", "-")
+adjusted_sales_heading = make_statement("Adjusted Sales & Profit",
+                                        "-")
+
+adjusted_explanation = (f"We have given away a ticket worth ${ticket_won:.2f} which means \nour"
+                        f"sales have decreased by ${ticket_won:.2f} and our profit \n"
+                        f"decreased by ${profit_won:.2f}.")
+
+# list of string to be outputted / written to file
+to_write = [heading_string, "\n",
+            ticket_details_heading,
+            mini_movie_string, "\n",
+            total_paid_string,
+            total_profit_string, "\n",
+            raffle_heading, "\n",
+            lucky_winner_string, "\n",
+            adjusted_sales_heading,
+            adjusted_explanation, "\n",
+            final_total_paid_string,
+            final_profit_string, "\n",
+            num_sold_string]
+
+# print area
+print()
+for item in to_write:
+    print(item)
+
+# create file to hold data (add .txt extension)
+file_name = "MMF_ticket_details"
+write_to = "{}.txt".format(file_name)
+
+text_file = open(write_to, "w+")
+
+# write the item to file
+for item in to_write:
+    text_file.write(item)
+    text_file.write("\n")
+
